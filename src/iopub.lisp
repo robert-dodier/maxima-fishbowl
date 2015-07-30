@@ -45,9 +45,13 @@
 
                                                                     
 (defun send-execute-result (iopub parent-msg sig execution-count result)
+  (format t "HEY SEND-EXECUTE-RESULT, (TYPE-OF RESULT)=>~S, RESULT=~S~%" (type-of result) result)
   (let ((display-obj (display result)))
-    (let ((result-msg (make-message-from-parent parent-msg "pyout" nil
-						`(("execution_count" . ,execution-count)
+    (format t "HEY SEND-EXECUTE-RESULT, (TYPE-OF DISPLAY-OBJ)=>~S, DISPLAY-OBJ~S~%" (type-of display-obj) display-obj)
+    (format t "HEY SEND-EXECUTE-RESULT, (TYPE-OF (DISPLAY-OBJECT-DATA DISPLAY-OBJ))=>~S, (DISPLAY-OBJECT-DATA DISPLAY-OBJ)~S~%" (type-of (display-object-data display-obj)) (display-object-data display-obj))
+    (let ((result-msg (make-message-from-parent parent-msg "display_data" nil
+						`(;; ?? !! ("execution_count" . ,execution-count)
+                          ("source" . "maxima-fishbowl")
 						  ("data" . ,(display-object-data display-obj))
 						  ("metadata" . ())))))
     ;; (message-send (iopub-socket iopub) result-msg :identities '("pyout") :raw-content t))))
