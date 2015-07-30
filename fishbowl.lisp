@@ -1,4 +1,3 @@
-(require :asdf)
 
 (let ((cmd-args
        ;; Borrowed from apply-argv, command-line-arguments.  Temporary solution (?)
