@@ -57,8 +57,6 @@ class Config:
     def __init__(self):
         self.ipython_dir = IPython.utils.path.get_ipython_dir()
         self.ipython_profile_dir = self.ipython_dir + "/profile_fishbowl"
-        self.lisp_implementation = "sbcl" # TODO: ccl support (others ? requires threading)
-        self.lisp_executable = None # we'll derive executable from implementation later if need be
         self.ipython_executable = shutil.which("ipython3")
         self.ipython_command = "console"
         self.lisp_preload = None
@@ -90,8 +88,6 @@ def process_command_line(argv):
 
     profile_dir_set = False
     profile_set = False
-    lisp_set = False
-    lisp_exec_set = False
     ipython_exec_set = False
 
     while i < len(argv):
@@ -107,16 +103,6 @@ def process_command_line(argv):
                 halt("Error: unexpected '--profile' option, profile already set")
             config.ipython_profile_dir = config.ipython_dir + "/profile_" + argv[i][10:]
             profile_set = True
-        elif argv[i].startswith("--lisp="):
-            if lisp_set:
-                halt("Error: --lisp option set twice")
-            config.lisp_implementation = argv[i][7:]
-            lisp_set = True
-        elif argv[i].startswith("--lisp-exec="):
-            if lisp_exec_set:
-                halt("Error: --lisp-exec option set twice")
-            config.lisp_executable = argv[i][12:]
-            lisp_exec_set = True
         elif argv[i].startswith("--ipython-exec="):
             if ipython_exec_set:
                 halt("Error: --ipython-exec option set twice")
@@ -130,7 +116,6 @@ def process_command_line(argv):
         i += 1
 
     #print("IPython profile directory = {}".format(config.ipython_profile_dir))
-    #print("Lisp implementation = {}".format(config.lisp_implementation))
     #print("IPython executable = {}".format(config.ipython_executable))
 
     return config
@@ -161,71 +146,6 @@ else:
        or (ipython_version[1] != ipython_version_minor):
         halt("Error: mismatch ipython version ({}.{} vs {}.{})".format(ipython_version[0], ipython_version[1],
                                                                        ipython_version_major, ipython_version_minor))
-
-###################################
-## Check the lisp implementation ##
-###################################
-
-if config.lisp_implementation == "sbcl":
-    if not config.lisp_executable:
-        config.lisp_executable = 'sbcl'
-
-    try:
-        sbcl_version_string = subprocess.check_output([config.lisp_executable, "--version"]).decode()
-    except FileNotFoundError:
-        halt("Error: Lisp executable '{0}' not in PATH".format (config.lisp_executable))
-    except subprocess.CalledProcessError as e:
-        halt("Error: {} from SBCL".format(e))
-
-    #print("sbcl version string = {}".format(sbcl_version_string))
-
-    import re
-    m = re.match(r".*([0-9]+\.[0-9]+\.[0-9]+)", sbcl_version_string)
-    if not m:
-        halt("Error: issue with sbcl version string (please report)")
-    
-    config.sbcl_version = tuple([int(d) for d in m.group(1).split(".")])
-    #print("sbcl version = {}".format(config.sbcl_version))
-    if config.sbcl_version[0] < 1 or config.sbcl_version[1] < 2:
-        print ("warning: might require SBCL v1.2.x or above; stagger forward nonetheless")
-
-    print("... Kernel: using {}".format(sbcl_version_string))
-        
-elif config.lisp_implementation == "ccl":
-    if not config.lisp_executable:
-        config.lisp_executable = 'ccl'
-
-    try:
-        ccl_version_string = subprocess.check_output([config.lisp_executable, "-V"]).decode()
-    except FileNotFoundError:
-        halt("Error: Lisp executable '{0}' not in PATH".format (config.lisp_executable))
-    except subprocess.CalledProcessError as e:
-        halt("Error: {} from CCL".format(e))
-
-    #print("ccl version string = {}".format(ccl_version_string))
-
-    
-    import re
-    m = re.match(r".*([0-9]+\.[0-9]+)", ccl_version_string)
-    if not m:
-        halt("Error: issue with ccl version string (please report)")
-    
-    config.ccl_version = tuple([int(d) for d in m.group(1).split(".")])
-    #print("ccl version = {}".format(config.ccl_version))
-    if config.ccl_version[0] < 1 or config.ccl_version[1] < 10:
-        halt("Error: require CCL v1.10 or above")
-
-    print("... Kernel: using {}".format(ccl_version_string))
-        
-elif config.lisp_implementation == "ecl":
-    halt("Error: ECL not (yet) supported")
-elif config.lisp_implementation == "cmucl":
-    halt("Error: CMUCL not (yet) supported")
-elif config.lisp_implementation == "clisp":
-    halt("Error: CLisp not (yet) supported")
-else:
-    halt("Error: Common Lisp implementation '{}' not supported".format(config.lisp_implementation))
-
 
 ##############################
 ## Installation of profile  ##
@@ -285,15 +205,8 @@ print("... launch frontend")
 #                        "--Session.key=b''",
 #                        "--KernelManager.kernel_cmd=['sbcl', '--non-interactive', '--load', '{}/fishbowl.lisp', '{{connection_file}}']".format(config.fishbowl_startup_def_dir)])
 
-if config.lisp_implementation == "sbcl":
-    KERNEL_CMD = "--KernelManager.kernel_cmd=['{3}', '--non-interactive',{1} '--load', '{0}/fishbowl.lisp', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir, "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir, config.lisp_executable)
+KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '--batch',{1} '--', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir,  "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir)
 
-elif config.lisp_implementation == "ccl":
-    KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '--batch',{1} '--', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir,  "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir)
-
-else:
-    halt("Error: unsupported lisp implementation '{}'".format(lisp_implementation))
-    
 print("KERNEL_CMD = {}".format(KERNEL_CMD))
 
 try:
