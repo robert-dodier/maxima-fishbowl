@@ -202,7 +202,7 @@ print("... launch frontend")
 #                        "--Session.key=b''",
 #                        "--KernelManager.kernel_cmd=['sbcl', '--non-interactive', '--load', '{}/fishbowl.lisp', '{{connection_file}}']".format(config.fishbowl_startup_def_dir)])
 
-KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '--batch', '--', '{0}/src', '{1}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir, config.fishbowl_startup_run_dir)
+KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '{0}/src', '{1}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir, config.fishbowl_startup_run_dir)
 
 print("KERNEL_CMD = {}".format(KERNEL_CMD))
 
