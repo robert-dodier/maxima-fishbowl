@@ -289,12 +289,12 @@ if config.lisp_implementation == "sbcl":
     KERNEL_CMD = "--KernelManager.kernel_cmd=['{3}', '--non-interactive',{1} '--load', '{0}/fishbowl.lisp', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir, "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir, config.lisp_executable)
 
 elif config.lisp_implementation == "ccl":
-    KERNEL_CMD = "--KernelManager.kernel_cmd=['{3}', '--batch',{1} '--load', '{0}/fishbowl.lisp', '--', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir,  "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir, config.lisp_executable)
+    KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '--batch',{1} '--', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir,  "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir)
 
 else:
     halt("Error: unsupported lisp implementation '{}'".format(lisp_implementation))
     
-# print("KERNEL_CMD = {}".format(KERNEL_CMD))
+print("KERNEL_CMD = {}".format(KERNEL_CMD))
 
 try:
     import signal
