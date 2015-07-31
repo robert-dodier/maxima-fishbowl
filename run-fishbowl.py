@@ -145,11 +145,7 @@ else:
         halt("Error: {}".format(e))
 
     #print("ipython version string = {}".format(ipython_version_string))
-    import re
-    foo = re.sub ("-.*$", "", ipython_version_string)
-    print ("HEY IPYTHON_VERSION_STRING={}, FOO={}\n", ipython_version_string, foo)
-    ipython_version = tuple([int(d) for d in foo.split(".")])
-    print ("HEY IPTYHON_VERSION={}\n", ipython_version)
+    ipython_version = tuple([int(d) for d in ipython_version_string.split(".")])
     #print("ipython version = {}".format(ipython_version))
     if (ipython_version[0] != ipython_version_major) \
        or (ipython_version[1] != ipython_version_minor):
@@ -178,15 +174,15 @@ if config.lisp_implementation == "sbcl":
     config.sbcl_version = tuple([int(d) for d in m.group(1).split(".")])
     #print("sbcl version = {}".format(config.sbcl_version))
     if config.sbcl_version[0] < 1 or config.sbcl_version[1] < 2:
-        print ("warning: might require SBCL v1.2.x or above; stagger forward nonetheless")
+        halt("Error: require SBCL v1.2.x or above")
 
     print("... Kernel: using {}".format(sbcl_version_string))
         
 elif config.lisp_implementation == "ccl":
     try:
-        ccl_version_string = subprocess.check_output(["lx86cl", "-V"]).decode()
+        ccl_version_string = subprocess.check_output(["ccl", "-V"]).decode()
     except FileNotFoundError:
-        halt("Error: 'lx86cl' executable not in PATH")
+        halt("Error: 'ccl' executable not in PATH")
     except subprocess.CalledProcessError as e:
         halt("Error: {} from CCL".format(e))
 
@@ -277,12 +273,12 @@ if config.lisp_implementation == "sbcl":
     KERNEL_CMD = "--KernelManager.kernel_cmd=['sbcl', '--non-interactive',{1} '--load', '{0}/fishbowl.lisp', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir, "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir)
 
 elif config.lisp_implementation == "ccl":
-    KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '--batch',{1} '--', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir,  "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir)
+    KERNEL_CMD = "--KernelManager.kernel_cmd=['ccl', '--batch',{1} '--load', '{0}/fishbowl.lisp', '--', '{0}/src', '{2}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir,  "'--load', '{}',".format(config.lisp_preload) if config.lisp_preload else "", config.fishbowl_startup_run_dir)
 
 else:
     halt("Error: unsupported lisp implementation '{}'".format(lisp_implementation))
     
-print("KERNEL_CMD = {}".format(KERNEL_CMD))
+# print("KERNEL_CMD = {}".format(KERNEL_CMD))
 
 try:
     import signal
