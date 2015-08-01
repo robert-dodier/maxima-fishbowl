@@ -59,6 +59,7 @@ class Config:
         self.ipython_profile_dir = self.ipython_dir + "/profile_fishbowl"
         self.ipython_executable = shutil.which("ipython3")
         self.ipython_command = "console"
+        self.maxima_fishbowl_executable = None
 
 def process_command_line(argv):
     config = Config()
@@ -88,6 +89,7 @@ def process_command_line(argv):
     profile_dir_set = False
     profile_set = False
     ipython_exec_set = False
+    maxima_fishbowl_exec_set = False
 
     while i < len(argv):
         #print("cmd line option #{}: {}".format(i, argv[i]))
@@ -107,6 +109,11 @@ def process_command_line(argv):
                 halt("Error: --ipython-exec option set twice")
             config.ipython_executable = shutil.which(argv[i][15:])
             ipython_exec_set = True
+        elif argv[i].startswith("--maxima-fishbowl-exec="):
+            if maxima_fishbowl_exec_set:
+                halt("Error: --maxima-fishbowl-exec option set twice")
+            config.maxima_fishbowl_executable = shutil.which(argv[i][(len ("--maxima-fishbowl-exec=")):])
+            maxima_fishbowl_exec_set = True
         else:
             halt("Error: unexpected option '{}'".format(argv[i]))
 
@@ -202,7 +209,11 @@ print("... launch frontend")
 #                        "--Session.key=b''",
 #                        "--KernelManager.kernel_cmd=['sbcl', '--non-interactive', '--load', '{}/fishbowl.lisp', '{{connection_file}}']".format(config.fishbowl_startup_def_dir)])
 
-KERNEL_CMD = "--KernelManager.kernel_cmd=['/home/robert/maxima/maxima-code/binary/binary-openmcl/maxima-fishbowl', '{0}/src', '{1}', '{{connection_file}}']".format(config.fishbowl_startup_def_dir, config.fishbowl_startup_run_dir)
+if not config.maxima_fishbowl_executable:
+  halt ('''Error: no maxima-fishbowl executable specified, and no default.
+Note: use --maxima-fishbowl-exec=... option to specify.''')
+
+KERNEL_CMD = "--KernelManager.kernel_cmd=['{0}', '{1}/src', '{2}', '{{connection_file}}']".format(config.maxima_fishbowl_executable, config.fishbowl_startup_def_dir, config.fishbowl_startup_run_dir)
 
 print("KERNEL_CMD = {}".format(KERNEL_CMD))
 
