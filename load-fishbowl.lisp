@@ -1,6 +1,6 @@
 (require :asdf)
 
-(push #p"/home/robert/by-others/github/fredokun/fishbowl-repl/src/" asdf:*central-registry*)
+(push #p"/home/robert/playpen/github/maxima-fishbowl/src/" asdf:*central-registry*)
 ;; ?? !! (push #p"/usr/lib/sbcl/contrib/" asdf:*central-registry*)
 
 ;; for debugging
