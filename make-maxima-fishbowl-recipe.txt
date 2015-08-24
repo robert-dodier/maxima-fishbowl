@@ -1,4 +1,0 @@
-$ sh maxima-local -l ccl
-(%i1) parse_string ("1");
-(%i2) :lisp (load "/home/robert/playpen/github/maxima-fishbowl/load-fishbowl.lisp")
-(%i2) :lisp (ccl:save-application "binary/binary-openmcl/maxima-fishbowl" :toplevel-function 'fishbowl:kernel-start :prepend-kernel t)
